@@ -15,8 +15,6 @@ struct RSA {
 impl RSA {
     fn new() -> RSA {
         let (n, phi) = (73109369, 73092096);
-        println!("RSA.N: {:?}", n);
-        println!("RSA.Phi: {:?}", phi);
         let e = 10273;
         let mut d = 632713;
         while (d * e) % phi != 1 {
@@ -118,7 +116,7 @@ fn main() {
         "--encrypt" | "-e" => {
             let message = &args[2];
             let encrypted = rsa.encrypt(message.to_string());
-                        
+
             print!("Encrypted: ");
             for e in &encrypted {
                 print!("{},", e);
@@ -128,8 +126,6 @@ fn main() {
         },
         "--decrypt" | "-d" => {
             let encrypted: Vec<u64> = args[2].split(',').map(|x| x.parse().unwrap()).collect();
-            println!("Encrypted: {:?}", encrypted);
-            println!("RSA.N: {:?}", rsa.n);
             let decrypted = rsa.decrypt(encrypted);
             println!("Decrypted: {}", decrypted);
         },
