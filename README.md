@@ -1,4 +1,4 @@
-# To run in, you will need to build it  ````cargo build``
+# To run in, you will need to build it  ```cargo build```
 
 Then you will need to run the target .exe that have been generated.
 
