@@ -107,7 +107,7 @@ fn mod_pow(mut base: u64, mut exp: u64, modulus: u64) -> u64 {
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 {
-        println!("Usage: {} --encrypt(-e) or --decrypt(-d) <message> e d", args[0]);
+        println!("Usage: {} --encrypt(-e) or --decrypt(-d) <message> key-1 key-2", args[0]);
         return;
     }
 
@@ -127,6 +127,10 @@ fn main() {
 
         },
         "--decrypt" | "-d" => {
+            if args.len() < 5 {
+                println!("Usage: {} --encrypt(-e) or --decrypt(-d) <message> e d", args[0]);
+                return;
+            }
             let encrypted: Vec<u64> = args[2].split(',').map(|x| x.parse().unwrap()).collect();
             rsa.e = args[3].parse().unwrap();
             rsa.d = args[4].parse().unwrap();
