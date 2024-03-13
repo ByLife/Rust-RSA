@@ -15,8 +15,8 @@ struct RSA {
 impl RSA {
     fn new() -> RSA {
         let (n, phi) = (73109369, 73092096);
-        let e = 10273;
-        let mut d = 632713;
+        let mut e = random_prime();
+        let mut d = random_prime();
         while (d * e) % phi != 1 {
             d += 1;
         }
@@ -38,7 +38,7 @@ impl RSA {
         let mut decrypted: Vec<u64> = Vec::new();
         for c in encrypted {
             let m = mod_pow(c, self.d, self.n);
-            decrypted.push(m);
+        decrypted.push(m);
         }
         vec_to_string(decrypted)
     }
@@ -107,11 +107,11 @@ fn mod_pow(mut base: u64, mut exp: u64, modulus: u64) -> u64 {
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 {
-        println!("Usage: {} --encrypt(-e) or --decrypt(-d) <message>", args[0]);
+        println!("Usage: {} --encrypt(-e) or --decrypt(-d) <message> e d", args[0]);
         return;
     }
 
-    let rsa = RSA::new();
+    let mut rsa = RSA::new();
     match args[1].as_str() {
         "--encrypt" | "-e" => {
             let message = &args[2];
@@ -123,9 +123,13 @@ fn main() {
             }
             println!();
 
+            println!("Encrypt with: e={}, d={}", rsa.e, rsa.d);
+
         },
         "--decrypt" | "-d" => {
             let encrypted: Vec<u64> = args[2].split(',').map(|x| x.parse().unwrap()).collect();
+            rsa.e = args[3].parse().unwrap();
+            rsa.d = args[4].parse().unwrap();
             let decrypted = rsa.decrypt(encrypted);
             println!("Decrypted: {}", decrypted);
         },
