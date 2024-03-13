@@ -1,9 +1,50 @@
 extern crate rand;
 extern crate num;
 
+use std::env;
 use rand::Rng;
 use num::integer::gcd;
 
+struct RSA {
+    e: u64,
+    d: u64,
+    n: u64,
+    phi: u64,
+}
+
+impl RSA {
+    fn new() -> RSA {
+        let (n, phi) = (73109369, 73092096);
+        println!("RSA.N: {:?}", n);
+        println!("RSA.Phi: {:?}", phi);
+        let e = 10273;
+        let mut d = 632713;
+        while (d * e) % phi != 1 {
+            d += 1;
+        }
+
+        RSA { e, d, n, phi }
+    }
+
+    fn encrypt(&self, message: String) -> Vec<u64> {
+        let message_int = string_to_vec(message);
+        let mut encrypted: Vec<u64> = Vec::new();
+        for m in message_int {
+            let c = mod_pow(m, self.e, self.n);
+            encrypted.push(c);
+        }
+        encrypted
+    }
+
+    fn decrypt(&self, encrypted: Vec<u64>) -> String {
+        let mut decrypted: Vec<u64> = Vec::new();
+        for c in encrypted {
+            let m = mod_pow(c, self.d, self.n);
+            decrypted.push(m);
+        }
+        vec_to_string(decrypted)
+    }
+}
 
 fn string_to_vec(s: String) -> Vec<u64> {
     let mut v: Vec<u64> = Vec::new();
@@ -63,64 +104,35 @@ fn mod_pow(mut base: u64, mut exp: u64, modulus: u64) -> u64 {
     }
     result
 }
-// return phi and n
-
-fn n() -> (u64, u64){
-    let p = random_prime();
-    let q = random_prime();
-    let n = p * q;
-    let phi = (p - 1) * (q - 1);
-    (n, phi)
-}
-
 
 
 fn main() {
-    let message = "Hello, world! é lé méc";
-    let message_int = string_to_vec(message.to_string());
-    println!("Message déchiffré: {:?}", message);
-
-    let n_res = n();
-
-    let n = n_res.0;
-    let phi = n_res.1;
-
-    let mut e = random_prime();
-    while e < phi {
-        if gcd(e as u64, phi as u64) == 1 {
-            break;
-        }
-        e += 1;
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 3 {
+        println!("Usage: {} --encrypt(-e) or --decrypt(-d) <message>", args[0]);
+        return;
     }
 
-    let mut d = random_prime();
+    let rsa = RSA::new();
+    match args[1].as_str() {
+        "--encrypt" | "-e" => {
+            let message = &args[2];
+            let encrypted = rsa.encrypt(message.to_string());
+                        
+            print!("Encrypted: ");
+            for e in &encrypted {
+                print!("{},", e);
+            }
+            println!();
 
-    while d < phi {
-        if (d * e) % phi == 1 {
-            break;
-        }
-        d += 1;
+        },
+        "--decrypt" | "-d" => {
+            let encrypted: Vec<u64> = args[2].split(',').map(|x| x.parse().unwrap()).collect();
+            println!("Encrypted: {:?}", encrypted);
+            println!("RSA.N: {:?}", rsa.n);
+            let decrypted = rsa.decrypt(encrypted);
+            println!("Decrypted: {}", decrypted);
+        },
+        _ => println!("Usage: {} --encrypt(-e) or --decrypt(-d) <message>", args[0]),
     }
-
-    let mut encrypted: Vec<u64> = Vec::new();
-
-    for m in message_int {
-        let c = mod_pow(m, e as u64, n);
-        encrypted.push(c);
-    }
-
-    println!("{:?}", encrypted);
-
-    let mut decrypted: Vec<u64> = Vec::new();
-
-    for c in encrypted {
-        let m = mod_pow(c, d as u64, n);
-        decrypted.push(m);
-    }
-
-    println!("{:?}", decrypted);
-
-    let decrypted_message = vec_to_string(decrypted);
-    println!("{}", decrypted_message);
-
 }
